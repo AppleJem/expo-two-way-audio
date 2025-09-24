@@ -96,6 +96,11 @@ public class ExpoTwoWayAudioModule: Module {
             self.audioEngine = nil
         }
 
+        Function("resetSession") {
+            self.audioEngine?.resetSession()
+            self.audioEngine = nil
+        }
+
         Function("restart") {
             self.audioEngine?.resumeRecordingAndPlayer()
             self.sendEvent(

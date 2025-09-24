@@ -25,6 +25,10 @@ export function tearDown() {
   return ExpoTwoWayAudioModule.tearDown();
 }
 
+export function resetSession() {
+  return ExpoTwoWayAudioModule.resetSession();
+}
+
 export function restart() {
   return ExpoTwoWayAudioModule.restart();
 }

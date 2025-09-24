@@ -280,6 +280,49 @@ class AudioEngine {
         stopRecordingAndPlayer()
         avAudioEngine.stop()
     }
+
+    func resetSession() {
+        // First do the standard teardown
+        stopRecordingAndPlayer()
+
+        // Remove audio taps before stopping the engine
+        avAudioEngine.inputNode.removeTap(onBus: 0)
+        avAudioEngine.mainMixerNode.removeTap(onBus: 0)
+
+        // Stop the audio engine
+        avAudioEngine.stop()
+
+        // Reset AVAudioSession to a neutral state
+        let session: AVAudioSession = AVAudioSession.sharedInstance()
+
+        do {
+            // Reset category to ambient (neutral for other frameworks)
+            try session.setCategory(.ambient)
+        } catch {
+            print("Could not reset audio category: \(error.localizedDescription)")
+        }
+
+        do {
+            // Clear preferred sample rate (let system choose)
+            try session.setPreferredSampleRate(44100) // iOS default
+        } catch {
+            print("Could not reset preferred sample rate: \(error.localizedDescription)")
+        }
+
+        do {
+            // Disable voice processing on input node
+            try avAudioEngine.inputNode.setVoiceProcessingEnabled(false)
+        } catch {
+            print("Could not disable voice processing: \(error.localizedDescription)")
+        }
+
+        do {
+            // Deactivate session and notify other audio frameworks
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("Could not deactivate audio session: \(error.localizedDescription)")
+        }
+    }
     
     var isPlaying: Bool {
         return speechPlayer.isPlaying
