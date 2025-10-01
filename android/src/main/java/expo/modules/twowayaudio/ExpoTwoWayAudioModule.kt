@@ -14,6 +14,7 @@ class ExpoTwoWayAudioModule : Module() {
         private const val ON_OUTPUT_VOLUME_LEVEL_EVENT = "onOutputVolumeLevelData"
         private const val ON_RECORDING_CHANGE_EVENT = "onRecordingChange"
         private const val ON_AUDIO_INTERRUPTION_EVENT = "onAudioInterruption"
+        private const val ON_PLAYBACK_FINISHED_EVENT = "onPlaybackFinished"
         var audioEngine: AudioEngine? = null
     }
 
@@ -100,7 +101,8 @@ class ExpoTwoWayAudioModule : Module() {
             ON_INPUT_VOLUME_LEVEL_EVENT,
             ON_OUTPUT_VOLUME_LEVEL_EVENT,
             ON_RECORDING_CHANGE_EVENT,
-            ON_AUDIO_INTERRUPTION_EVENT
+            ON_AUDIO_INTERRUPTION_EVENT,
+            ON_PLAYBACK_FINISHED_EVENT
         )
     }
 
@@ -120,6 +122,9 @@ class ExpoTwoWayAudioModule : Module() {
                 sendEvent(ON_RECORDING_CHANGE_EVENT, bundleOf(
                     "data" to (audioEngine?.isRecording ?: false)
                 ))
+            }
+            onPlaybackFinishedCallback = {
+                sendEvent(ON_PLAYBACK_FINISHED_EVENT, bundleOf("data" to emptyMap<String, Any>()))
             }
         }
     }

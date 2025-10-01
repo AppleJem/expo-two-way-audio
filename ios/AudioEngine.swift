@@ -15,9 +15,12 @@ class AudioEngine {
     public var onInputVolumeCallback: ((Float) -> Void)?
     public var onOutputVolumeCallback: ((Float) -> Void)?
     public var onAudioInterruptionCallback: ((String) -> Void)?
-    
+    public var onPlaybackFinishedCallback: (() -> Void)?
+
     private var inputLevelTimer: Timer?
     private var outputLevelTimer: Timer?
+    private var scheduledBuffersCount = 0
+    private let bufferCountQueue = DispatchQueue(label: "com.speechmatics.expotowayaudio.bufferCount")
     
     private var inputBuffer = [Float](repeating: 0, count: 2048)
     private var outputBuffer = [Float](repeating: 0, count: 2048)
@@ -195,13 +198,32 @@ class AudioEngine {
                 self.discardRecording = false
             }
         }
-        
+
         guard let buffer = createBuffer(from: pcmData) else {
             print("Failed to create audio buffer")
             return
         }
-        speechPlayer.scheduleBuffer(buffer)
-        
+
+        // Increment buffer count before scheduling
+        bufferCountQueue.sync {
+            scheduledBuffersCount += 1
+        }
+
+        // Schedule buffer with completion handler
+        speechPlayer.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+            guard let self = self else { return }
+
+            // Decrement buffer count when playback completes
+            self.bufferCountQueue.sync {
+                self.scheduledBuffersCount -= 1
+
+                // If no more buffers are scheduled, fire the completion callback
+                if self.scheduledBuffersCount == 0 {
+                    self.onPlaybackFinishedCallback?()
+                }
+            }
+        }
+
         if !speechPlayer.isPlaying {
             speechPlayer.play()
         }

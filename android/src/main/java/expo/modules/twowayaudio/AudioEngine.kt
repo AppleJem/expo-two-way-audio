@@ -45,6 +45,7 @@ class AudioEngine (context: Context) {
     var onInputVolumeCallback: ((Float) -> Unit)? = null
     var onOutputVolumeCallback: ((Float) -> Unit)? = null
     var onAudioInterruptionCallback: ((String) -> Unit)? = null
+    var onPlaybackFinishedCallback: (() -> Unit)? = null
 
     init {
         initializeAudio(context)
@@ -278,6 +279,7 @@ class AudioEngine (context: Context) {
             }finally {
                 isPlaying = false
                 onOutputVolumeCallback?.invoke(0.0F)
+                onPlaybackFinishedCallback?.invoke()
             }
         }
     }
